@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TEMPCTRL — HMI</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg:#0C0C0E;--panel:#131316;--raised:#1A1A1F;--border:#252529;--border-hi:#35353B;
+    --t1:#EAEAEC;--t2:#A0A0A8;--t3:#606068;--t4:#3A3A42;
+    --cold:#3B9ACA;--ok:#3BCA6E;--hot:#CA3B3B;--warn:#CAA83B;--accent:#3B7BCA;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;overflow:hidden;}
+  body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--t1);}
+
+  .topbar{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid var(--border);background:var(--panel);flex-shrink:0;}
+  .topbar-left{display:flex;align-items:center;gap:14px;}
+  .topbar-logo{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;letter-spacing:2px;}
+  .topbar-logo span{color:var(--accent);}
+  .topbar-sep{width:1px;height:18px;background:var(--border);}
+  .topbar-status{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--t3);}
+  .st-dot{width:6px;height:6px;border-radius:50%;background:var(--t4);}
+  .st-dot.on{background:var(--ok);box-shadow:0 0 6px var(--ok);}
+  .topbar-right{display:flex;align-items:center;gap:14px;}
+  .topbar-time{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--t3);}
+  .conn-btn{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:500;padding:5px 14px;letter-spacing:1px;text-transform:uppercase;border:1px solid var(--border-hi);background:var(--raised);color:var(--t2);cursor:pointer;transition:all .15s;}
+  .conn-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .conn-btn.on{background:#1a2a1a;color:var(--ok);border-color:#2a3a2a;}
+
+  .err{padding:8px 20px;font-size:11px;color:var(--hot);background:#1a0e0e;border-bottom:1px solid #2a1515;display:none;flex-shrink:0;}
+
+  .shell{display:flex;flex-direction:column;height:100vh;}
+  .body{display:grid;grid-template-columns:300px 1fr 260px;flex:1;min-height:0;}
+  .col{display:flex;flex-direction:column;min-height:0;overflow:hidden;}
+  .col-left{border-right:1px solid var(--border);}
+  .col-right{border-left:1px solid var(--border);}
+
+  .sh{padding:10px 16px;border-bottom:1px solid var(--border);font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--t3);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+  .sh .tag{font-size:8px;padding:2px 6px;border:1px solid var(--border);color:var(--t3);letter-spacing:1px;}
+  .sh .tag.live{color:var(--ok);border-color:#1a3a2a;background:#0a140a;}
+
+  .left-scroll{flex:1;overflow-y:auto;min-height:0;}
+  .left-scroll::-webkit-scrollbar{width:2px;}
+  .left-scroll::-webkit-scrollbar-thumb{background:var(--border-hi);}
+
+  .pv-block{padding:16px;border-bottom:1px solid var(--border);}
+  .pv-label{font-size:9px;color:var(--t3);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;font-weight:500;}
+  .pv-value{font-family:'IBM Plex Mono',monospace;font-size:52px;font-weight:300;line-height:1;letter-spacing:-2px;transition:color .2s;}
+  .pv-unit{font-size:14px;color:var(--t3);}
+  .pv-sub{font-size:11px;color:var(--t3);margin-top:4px;display:flex;align-items:center;gap:5px;}
+  .pv-sub .ind{width:5px;height:5px;border-radius:1px;}
+
+  .sp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+  .sp-card{background:var(--raised);border:1px solid var(--border);padding:10px;}
+  .sp-card-label{font-size:8px;color:var(--t3);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
+  .sp-card-val{font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:400;line-height:1;}
+  .sp-card-unit{font-size:11px;color:var(--t3);}
+
+  .dev-bar-wrap{height:28px;background:var(--raised);border:1px solid var(--border);position:relative;margin-top:6px;overflow:hidden;}
+  .dev-zone{position:absolute;top:0;height:100%;opacity:.15;}
+  .dev-sp{position:absolute;top:0;width:1px;height:100%;border-left:2px dashed var(--t4);z-index:1;}
+  .dev-needle{position:absolute;top:0;width:2px;height:100%;background:var(--t1);transition:left .3s;z-index:2;}
+  .dev-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--t4);margin-top:3px;font-family:'IBM Plex Mono',monospace;}
+
+  .relay-row{display:flex;align-items:center;gap:10px;margin-top:8px;}
+  .relay-ind{width:36px;height:36px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all .2s;}
+  .relay-ind.on{border-color:var(--ok);background:#0a140a;}
+  .relay-ind svg{width:16px;height:16px;color:var(--t4);transition:color .2s;}
+  .relay-ind.on svg{color:var(--ok);}
+  .relay-ind.on .rspin{animation:rs .6s linear infinite;}
+  @keyframes rs{to{transform:rotate(360deg);}}
+  .ri-name{font-size:13px;font-weight:500;}
+  .ri-sub{font-size:10px;color:var(--t3);}
+
+  .col-center{display:flex;flex-direction:column;min-height:0;}
+  .chart-wrap{flex:1;padding:12px 16px;min-height:0;position:relative;}
+  canvas{width:100%;height:100%;display:block;}
+
+  .ctrl-block{padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
+  .ctrl-group{margin-bottom:12px;}
+  .ctrl-label{font-size:9px;color:var(--t3);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;font-weight:500;}
+  .ctrl-row{display:flex;gap:6px;align-items:center;}
+  .ctrl-in{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:400;width:64px;padding:6px 8px;text-align:center;background:var(--raised);border:1px solid var(--border);color:var(--t1);}
+  .ctrl-in:focus{outline:none;border-color:var(--accent);}
+  .ctrl-u{font-size:12px;color:var(--t3);}
+  .ctrl-range{-webkit-appearance:none;width:100%;background:none;cursor:pointer;margin-top:6px;height:24px;position:relative;}
+  .ctrl-range::-webkit-slider-runnable-track{height:6px;background:var(--border);border-radius:3px;}
+  .ctrl-range::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:var(--accent);border:2px solid #5A9AE0;border-radius:50%;margin-top:-5px;cursor:pointer;transition:all .15s;box-shadow:0 0 6px rgba(59,123,202,0.3);}
+  .ctrl-range::-webkit-slider-thumb:hover{transform:scale(1.2);box-shadow:0 0 10px rgba(59,123,202,0.5);}
+  .ctrl-range:focus{outline:none;}
+  .ctrl-range.cold::-webkit-slider-thumb{background:var(--cold);border-color:#5AB0E0;box-shadow:0 0 6px rgba(59,154,202,0.3);}
+  .ctrl-range.cold::-webkit-slider-thumb:hover{box-shadow:0 0 10px rgba(59,154,202,0.5);}
+  .ctrl-range.hot::-webkit-slider-thumb{background:var(--hot);border-color:#E06060;box-shadow:0 0 6px rgba(202,59,59,0.3);}
+  .ctrl-range.hot::-webkit-slider-thumb:hover{box-shadow:0 0 10px rgba(202,59,59,0.5);}
+  .ctrl-range.hyst::-webkit-slider-thumb{background:var(--warn);border-color:#E0C060;box-shadow:0 0 6px rgba(202,168,59,0.3);}
+  .ctrl-range.hyst::-webkit-slider-thumb:hover{box-shadow:0 0 10px rgba(202,168,59,0.5);}
+
+  .send-btn{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:500;width:100%;padding:10px;letter-spacing:1px;text-transform:uppercase;border:1px solid var(--border);background:var(--raised);color:var(--t2);cursor:pointer;transition:all .15s;}
+  .send-btn:hover:not(:disabled){background:var(--accent);color:#fff;border-color:var(--accent);}
+  .send-btn:disabled{opacity:.2;cursor:not-allowed;}
+
+  .presets{display:flex;gap:4px;margin-top:8px;}
+  .pre-btn{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:3px 8px;border:1px solid var(--border);background:none;color:var(--t3);cursor:pointer;transition:all .15s;flex:1;text-align:center;}
+  .pre-btn:hover{color:var(--t1);border-color:var(--t2);}
+
+  /* Log: compact, only 3 lines visible, clickable */
+  .log-block{flex-shrink:0;border-top:0;}
+  .log-header{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:background .15s;user-select:none;}
+  .log-header:hover{background:var(--raised);}
+  .log-header-left{display:flex;align-items:center;gap:8px;}
+  .log-title{font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--t3);}
+  .log-badge{font-family:'IBM Plex Mono',monospace;font-size:8px;padding:1px 6px;background:var(--raised);border:1px solid var(--border);color:var(--t3);}
+  .log-expand{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--t4);letter-spacing:1px;}
+  .log-mini{padding:8px 16px;font-size:10px;font-family:'IBM Plex Mono',monospace;}
+  .log-mini-row{padding:1px 0;display:flex;gap:8px;line-height:1.4;}
+  .log-mini-t{color:var(--t4);flex-shrink:0;}
+  .log-mini-m{color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  /* ── OVERLAY: Session History ── */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:center;justify-content:center;}
+  .overlay.show{display:flex;}
+  .overlay-box{background:var(--panel);border:1px solid var(--border);width:700px;max-width:90vw;max-height:85vh;display:flex;flex-direction:column;}
+  .overlay-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+  .overlay-title{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;}
+  .overlay-actions{display:flex;gap:8px;}
+  .ov-btn{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 12px;border:1px solid var(--border);background:var(--raised);color:var(--t2);cursor:pointer;transition:all .15s;}
+  .ov-btn:hover{border-color:var(--t2);color:var(--t1);}
+  .ov-btn.danger:hover{border-color:var(--hot);color:var(--hot);}
+  .overlay-body{flex:1;overflow-y:auto;min-height:0;padding:0;}
+  .overlay-body::-webkit-scrollbar{width:3px;}
+  .overlay-body::-webkit-scrollbar-thumb{background:var(--border-hi);}
+
+  .session-item{border-bottom:1px solid var(--border);}
+  .session-head{padding:12px 20px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:background .1s;}
+  .session-head:hover{background:var(--raised);}
+  .session-date{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;color:var(--t1);}
+  .session-meta{font-size:10px;color:var(--t3);display:flex;gap:12px;}
+  .session-meta span{display:flex;align-items:center;gap:4px;}
+  .session-logs{display:none;padding:0 20px 12px;max-height:300px;overflow-y:auto;}
+  .session-logs.open{display:block;}
+  .session-logs::-webkit-scrollbar{width:2px;}
+  .session-logs::-webkit-scrollbar-thumb{background:var(--border-hi);}
+  .sl-row{padding:1px 0;display:flex;gap:8px;font-size:10px;font-family:'IBM Plex Mono',monospace;line-height:1.4;}
+  .sl-t{color:var(--t4);flex-shrink:0;}
+  .sl-m{color:var(--t3);}
+  .sl-c{color:var(--warn);}
+
+  .no-sessions{padding:40px 20px;text-align:center;color:var(--t4);font-size:12px;}
+
+  @media(max-width:900px){
+    .body{grid-template-columns:1fr;}
+    .col-left,.col-right{border:none;border-bottom:1px solid var(--border);}
+    html,body{overflow:auto;}
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo">TEMP<span>CTRL</span></div>
+    <div class="topbar-sep"></div>
+    <div class="topbar-status"><div class="st-dot" id="stDot"></div><span id="stText">Offline</span></div>
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-time" id="clock">--:--:--</div>
+    <button class="conn-btn" id="cBtn" onclick="toggle()">Connect</button>
+  </div>
+</div>
+
+<div class="err" id="err"></div>
+
+<div class="body">
+
+  <!-- LEFT -->
+  <div class="col col-left">
+    <div class="sh">Prozesswerte <span class="tag" id="liveTag">Offline</span></div>
+    <div class="left-scroll">
+      <div class="pv-block">
+        <div class="pv-label">Innen — Temperatur (DS18B20)</div>
+        <div style="display:flex;align-items:baseline;gap:6px">
+          <div class="pv-value" id="pvVal" style="color:var(--t4)">—</div>
+          <div class="pv-unit">°C</div>
+        </div>
+        <div class="pv-sub"><div class="ind" id="pvInd" style="background:var(--t4)"></div><span id="pvZone">Keine Daten</span></div>
+      </div>
+      <div class="pv-block">
+        <div class="pv-label">Innen — Feuchte (DHT22)</div>
+        <div style="display:flex;align-items:baseline;gap:6px">
+          <div class="pv-value" id="humVal" style="font-size:42px;color:var(--t4)">—</div>
+          <div class="pv-unit">%RH</div>
+        </div>
+        <div class="pv-sub"><div class="ind" id="humInd" style="background:var(--t4)"></div><span id="humZone">Keine Daten</span></div>
+      </div>
+      <div class="pv-block">
+        <div class="pv-label">Sollwerte (SP)</div>
+        <div class="sp-grid">
+          <div class="sp-card"><div class="sp-card-label">SP Kalt</div><div><span class="sp-card-val" id="spColdDisp" style="color:var(--cold)">20</span><span class="sp-card-unit"> °C</span></div></div>
+          <div class="sp-card"><div class="sp-card-label">SP Warm</div><div><span class="sp-card-val" id="spHotDisp" style="color:var(--hot)">25</span><span class="sp-card-unit"> °C</span></div></div>
+        </div>
+      </div>
+      <div class="pv-block">
+        <div class="pv-label">Abweichung PV / SP</div>
+        <div class="dev-bar-wrap">
+          <div class="dev-zone" id="zCold" style="background:var(--cold);left:0;width:33%"></div>
+          <div class="dev-zone" id="zOk" style="background:var(--ok);left:33%;width:34%"></div>
+          <div class="dev-zone" id="zHot" style="background:var(--hot);left:67%;width:33%"></div>
+          <div class="dev-sp" id="devSp" style="left:50%"></div>
+          <div class="dev-needle" id="devNeedle" style="left:50%"></div>
+        </div>
+        <div class="dev-labels"><span id="devMin">0°</span><span id="devMid">—</span><span id="devMax">50°</span></div>
+      </div>
+      <div class="pv-block">
+        <div class="pv-label">Aktorik</div>
+        <div class="relay-row">
+          <div class="relay-ind" id="rInd">
+            <svg class="rspin" id="rSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="2.5"/><path d="M12 9.5C12 9.5 13 4 9.5 2.5C6 1 5 5 7 7.5"/><path d="M14.5 12C14.5 12 20 13 21.5 9.5C23 6 19 5 16.5 7"/><path d="M12 14.5C12 14.5 11 20 14.5 21.5C18 23 19 19 17 16.5"/><path d="M9.5 12C9.5 12 4 11 2.5 14.5C1 18 5 19 7.5 17"/></svg>
+          </div>
+          <div><div class="ri-name" id="rName">Ventilator AUS</div><div class="ri-sub" id="rSub">Relais offen · Standby</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER -->
+  <div class="col col-center">
+    <div class="sh">Trendverlauf <span class="tag" id="cMeta">0/120</span></div>
+    <div class="chart-wrap"><canvas id="ch"></canvas></div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="col col-right">
+    <div class="sh">Sollwert-Vorgabe</div>
+    <div class="ctrl-block">
+      <div class="ctrl-group">
+        <div class="ctrl-label">Kaltgrenze (SP Low)</div>
+        <div class="ctrl-row"><input type="number" class="ctrl-in" id="ciCold" value="20" min="0" max="49" onchange="syncSlid()"><span class="ctrl-u">°C</span></div>
+        <input type="range" class="ctrl-range cold" id="crCold" min="0" max="49" value="20" oninput="syncInput()">
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">Warmgrenze (SP High)</div>
+        <div class="ctrl-row"><input type="number" class="ctrl-in" id="ciHot" value="25" min="1" max="50" onchange="syncSlid()"><span class="ctrl-u">°C</span></div>
+        <input type="range" class="ctrl-range hot" id="crHot" min="1" max="50" value="25" oninput="syncInput()">
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">Hysterese</div>
+        <div class="ctrl-row"><input type="number" class="ctrl-in" id="ciHyst" value="1.0" min="0.1" max="10" step="0.1" onchange="syncHyst()" style="width:64px"><span class="ctrl-u">°C</span></div>
+        <input type="range" class="ctrl-range hyst" id="crHyst" min="1" max="100" value="10" oninput="syncHystSlid()">
+        <div style="font-size:9px;color:var(--t4);margin-top:2px">Abschaltpunkt = SP High − Hysterese</div>
+      </div>
+      <button class="send-btn" id="sBtn" onclick="sendSP()" disabled>Sollwerte übertragen</button>
+      <div class="presets">
+        <button class="pre-btn" onclick="setPre(15,20)">Kühl 15/20</button>
+        <button class="pre-btn" onclick="setPre(20,25)">Std 20/25</button>
+        <button class="pre-btn" onclick="setPre(25,30)">Warm 25/30</button>
+        <button class="pre-btn" onclick="setPre(30,40)">Heiß 30/40</button>
+      </div>
+    </div>
+
+    <!-- Mini log: 3 lines, clickable -->
+    <div class="log-block">
+      <div class="log-header" onclick="openHistory()">
+        <div class="log-header-left">
+          <div class="log-title">Protokoll</div>
+          <div class="log-badge" id="logCount">0</div>
+        </div>
+        <div class="log-expand">Historie ▸</div>
+      </div>
+      <div class="log-mini" id="logMini"></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- SESSION HISTORY OVERLAY -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeHistory()">
+  <div class="overlay-box">
+    <div class="overlay-head">
+      <div class="overlay-title">Session-Historie</div>
+      <div class="overlay-actions">
+        <button class="ov-btn danger" onclick="clearAllSessions()">Alle löschen</button>
+        <button class="ov-btn" onclick="closeHistory()">Schließen</button>
+      </div>
+    </div>
+    <div class="overlay-body" id="sessionList"></div>
+  </div>
+</div>
+
+<script>
+const MX=300,STORE_KEY='tempctrl_sessions';
+let port=null,rdr=null,act=false,conn=false;
+let td=[],ld=[],ct=null,fo=false,hum=null,dhtT=null;
+let sessionStart=null,sessionLog=[];
+const $=id=>document.getElementById(id);
+
+setInterval(()=>{$('clock').textContent=new Date().toLocaleTimeString('de-DE');},1000);
+
+// ── Storage ──
+function getSessions(){try{return JSON.parse(localStorage.getItem(STORE_KEY))||[];}catch{return[];}}
+function saveSessions(s){try{localStorage.setItem(STORE_KEY,JSON.stringify(s));}catch{}}
+function saveCurrentSession(){
+  if(!sessionLog.length)return;
+  const sessions=getSessions();
+  const temps=sessionLog.filter(e=>e.temp!==null).map(e=>e.temp);
+  sessions.unshift({
+    start:sessionStart,
+    end:new Date().toISOString(),
+    entries:sessionLog.length,
+    minTemp:temps.length?Math.min(...temps).toFixed(1):null,
+    maxTemp:temps.length?Math.max(...temps).toFixed(1):null,
+    log:sessionLog.slice(-200) // keep last 200 entries per session
+  });
+  if(sessions.length>20)sessions.length=20; // max 20 sessions
+  saveSessions(sessions);
+}
+
+// ── Log (mini: last 3) ──
+function aLog(m,temp){
+  const t=new Date().toLocaleTimeString('de-DE');
+  ld.push({t,m});if(ld.length>200)ld.shift();
+  sessionLog.push({t,m,temp:temp||null});
+  $('logCount').textContent=ld.length;
+  renderMiniLog();
+}
+function renderMiniLog(){
+  const last3=ld.slice(-3);
+  $('logMini').innerHTML=last3.map(e=>`<div class="log-mini-row"><span class="log-mini-t">${e.t}</span><span class="log-mini-m">${e.m}</span></div>`).join('')||'<div style="color:var(--t4);font-style:italic;font-size:10px">Keine Einträge</div>';
+}
+
+// ── History Overlay ──
+function openHistory(){
+  const sessions=getSessions();
+  const el=$('sessionList');
+  if(!sessions.length){
+    el.innerHTML='<div class="no-sessions">Keine gespeicherten Sessions vorhanden</div>';
+  } else {
+    el.innerHTML=sessions.map((s,i)=>{
+      const d=new Date(s.start);
+      const dateStr=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+      const timeStr=d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+      const dur=s.end?Math.round((new Date(s.end)-new Date(s.start))/60000):0;
+      return `<div class="session-item">
+        <div class="session-head" onclick="toggleSession(${i})">
+          <div class="session-date">${dateStr} ${timeStr}</div>
+          <div class="session-meta">
+            <span>${s.entries} Einträge</span>
+            <span>${dur} min</span>
+            ${s.minTemp?`<span>${s.minTemp}–${s.maxTemp}°C</span>`:''}
+          </div>
+        </div>
+        <div class="session-logs" id="sess${i}">
+          ${s.log.map(e=>`<div class="sl-row"><span class="sl-t">${e.t}</span><span class="${e.m.startsWith('\u2192')?'sl-c':'sl-m'}">${e.m}</span></div>`).join('')}
+        </div>
+      </div>`;
+    }).join('');
+  }
+  $('overlay').classList.add('show');
+}
+function closeHistory(){$('overlay').classList.remove('show');}
+function toggleSession(i){const el=$('sess'+i);el.classList.toggle('open');}
+function clearAllSessions(){if(confirm('Alle Sessions löschen?')){saveSessions([]);openHistory();}}
+
+// ── Parse ──
+function parse(l){
+  const tm=l.match(/Temperatur:\s*([\d.-]+)/);
+  const fm=l.match(/Luefter:\s*(AN|AUS)/i)||l.match(/L.*fter:\s*(AN|AUS)/i);
+  const hm=l.match(/Feuchte:([\d.]+)/);
+  const dm=l.match(/DHTTemp:([\d.]+)/);
+  if(tm)return{
+    t:parseFloat(tm[1]),
+    f:fm?fm[1].toUpperCase()==='AN':false,
+    h:hm?parseFloat(hm[1]):null,
+    dt:dm?parseFloat(dm[1]):null
+  };
+  return null;
+}
+
+function colFor(t,c,h){
+  if(t===null)return{css:'var(--t4)',r:'#3A3A42'};
+  if(t<c)return{css:'var(--cold)',r:'#3B9ACA'};
+  if(t<=h)return{css:'var(--ok)',r:'#3BCA6E'};
+  return{css:'var(--hot)',r:'#CA3B3B'};
+}
+
+function syncInput(){let c=+$('crCold').value,h=+$('crHot').value;if(c>=h)$('crHot').value=c+1;$('ciCold').value=$('crCold').value;$('ciHot').value=$('crHot').value;updSP();}
+function syncSlid(){let c=+$('ciCold').value,h=+$('ciHot').value;if(c>=h)$('ciHot').value=c+1;$('crCold').value=$('ciCold').value;$('crHot').value=$('ciHot').value;updSP();}
+function syncHyst(){$('crHyst').value=Math.round(parseFloat($('ciHyst').value)*10);}
+function syncHystSlid(){$('ciHyst').value=(+$('crHyst').value/10).toFixed(1);}
+function setPre(c,h){$('ciCold').value=c;$('ciHot').value=h;$('crCold').value=c;$('crHot').value=h;updSP();}
+function updSP(){$('spColdDisp').textContent=$('ciCold').value;$('spHotDisp').textContent=$('ciHot').value;updDev();}
+
+function updDev(){
+  const c=+$('ciCold').value,h=+$('ciHot').value;
+  const mn=Math.min(c-10,0),mx=Math.max(h+10,50),rg=mx-mn;
+  const cP=((c-mn)/rg)*100,hP=((h-mn)/rg)*100;
+  $('zCold').style.left='0%';$('zCold').style.width=cP+'%';
+  $('zOk').style.left=cP+'%';$('zOk').style.width=(hP-cP)+'%';
+  $('zHot').style.left=hP+'%';$('zHot').style.width=(100-hP)+'%';
+  $('devSp').style.left=((cP+hP)/2)+'%';
+  if(ct!==null){$('devNeedle').style.left=Math.min(Math.max(((ct-mn)/rg)*100,0),100)+'%';}
+  $('devMin').textContent=mn+'°';$('devMid').textContent=ct!==null?ct.toFixed(1)+'°':'—';$('devMax').textContent=mx+'°';
+}
+
+function uUI(){
+  const c=+$('ciCold').value,h=+$('ciHot').value,cl=colFor(ct,c,h);
+  $('pvVal').textContent=ct!==null?ct.toFixed(1):'—';$('pvVal').style.color=cl.css;
+  $('pvInd').style.background=cl.r;
+  $('pvZone').textContent=ct===null?'Keine Daten':ct<c?'Unter Kaltgrenze':ct<=h?'Im Sollbereich':'Über Warmgrenze';
+
+  // Innen Feuchte (DHT11 - nur Feuchte, Temp kommt vom DS18B20)
+  $('humVal').textContent=hum!==null?hum.toFixed(1):'—';
+  if(hum!==null){
+    const humCol=hum<30?'var(--warn)':hum<60?'var(--ok)':'var(--cold)';
+    $('humVal').style.color=humCol;
+    $('humInd').style.background=hum<30?'#CAA83B':hum<60?'#3BCA6E':'#3B9ACA';
+    $('humZone').textContent=hum<30?'Trocken':hum<60?'Normal':'Feucht';
+  }
+
+  $('stDot').className=conn?'st-dot on':'st-dot';
+  $('stText').textContent=conn?'Online · COM':'Offline';$('stText').style.color=conn?'var(--ok)':'var(--t3)';
+  $('liveTag').textContent=conn?'Live':'Offline';$('liveTag').className=conn?'tag live':'tag';
+  $('rInd').className=fo?'relay-ind on':'relay-ind';$('rSvg').className=fo?'rspin':'';
+  $('rName').textContent=fo?'Ventilator EIN':'Ventilator AUS';$('rName').style.color=fo?'var(--ok)':'var(--t2)';
+  $('rSub').textContent=fo?'Relais geschlossen · Kühlung aktiv':'Relais offen · Standby';
+
+  // Außen
+  $('cMeta').textContent=td.length+'/'+MX;updSP();
+}
+
+function draw(){
+  const cv=$('ch'),cx=cv.getContext('2d');
+  const dp=devicePixelRatio||1,rc=cv.parentElement.getBoundingClientRect();
+  cv.width=rc.width*dp;cv.height=rc.height*dp;cx.scale(dp,dp);
+  const w=rc.width,h=rc.height,p={t:16,r:16,b:24,l:44};
+  cx.clearRect(0,0,w,h);
+  if(td.length<2){cx.fillStyle='#3A3A42';cx.font='12px IBM Plex Mono';cx.textAlign='center';cx.fillText(conn?'Warte auf Messdaten …':'Keine Verbindung',w/2,h/2);return;}
+  const ts=td.map(d=>d.v),mn=Math.floor(Math.min(...ts)-3),mx=Math.ceil(Math.max(...ts)+3),rg=mx-mn||1;
+  const c=+$('ciCold').value,ht=+$('ciHot').value,pw=w-p.l-p.r,ph=h-p.t-p.b,cl=colFor(ct,c,ht);
+  const yC=p.t+(1-(c-mn)/rg)*ph,yH=p.t+(1-(ht-mn)/rg)*ph;
+  cx.fillStyle='#3B9ACA08';cx.fillRect(p.l,yC,pw,h-p.b-yC);
+  cx.fillStyle='#3BCA6E06';cx.fillRect(p.l,yH,pw,yC-yH);
+  cx.fillStyle='#CA3B3B08';cx.fillRect(p.l,p.t,pw,yH-p.t);
+  cx.strokeStyle='#1A1A1F';cx.lineWidth=1;const step=Math.ceil(rg/6)||1;
+  for(let t=mn;t<=mx;t+=step){const y=p.t+(1-(t-mn)/rg)*ph;cx.beginPath();cx.moveTo(p.l,y);cx.lineTo(w-p.r,y);cx.stroke();cx.fillStyle='#3A3A42';cx.font='10px IBM Plex Mono';cx.textAlign='right';cx.fillText(t+'°',p.l-5,y+3);}
+  [{v:c,co:'#3B9ACA',lb:'SP Low'},{v:ht,co:'#CA3B3B',lb:'SP High'}].forEach(r=>{const y=p.t+(1-(r.v-mn)/rg)*ph;cx.strokeStyle=r.co;cx.lineWidth=1;cx.setLineDash([2,4]);cx.beginPath();cx.moveTo(p.l,y);cx.lineTo(w-p.r,y);cx.stroke();cx.setLineDash([]);cx.fillStyle=r.co;cx.font='9px IBM Plex Mono';cx.textAlign='left';cx.fillText(r.lb+' '+r.v+'°',p.l+4,y-4);});
+  const gd=cx.createLinearGradient(0,p.t,0,h-p.b);gd.addColorStop(0,cl.r+'18');gd.addColorStop(1,cl.r+'00');
+  cx.beginPath();td.forEach((d,i)=>{const x=p.l+(i/(MX-1))*pw,y=p.t+(1-(d.v-mn)/rg)*ph;i===0?cx.moveTo(x,y):cx.lineTo(x,y);});
+  const lx=p.l+((td.length-1)/(MX-1))*pw;cx.lineTo(lx,h-p.b);cx.lineTo(p.l,h-p.b);cx.fillStyle=gd;cx.fill();
+  cx.beginPath();td.forEach((d,i)=>{const x=p.l+(i/(MX-1))*pw,y=p.t+(1-(d.v-mn)/rg)*ph;i===0?cx.moveTo(x,y):cx.lineTo(x,y);});
+  cx.strokeStyle=cl.r;cx.lineWidth=1.5;cx.stroke();
+  const ly=p.t+(1-(td[td.length-1].v-mn)/rg)*ph;
+  cx.beginPath();cx.arc(lx,ly,4,0,Math.PI*2);cx.fillStyle=cl.r;cx.fill();
+  cx.beginPath();cx.arc(lx,ly,2,0,Math.PI*2);cx.fillStyle='#fff';cx.fill();
+  cx.fillStyle='#3A3A42';cx.font='10px IBM Plex Mono';cx.textAlign='center';
+  cx.fillText(td[0].ti,p.l,h-5);if(td.length>1)cx.fillText(td[td.length-1].ti,lx,h-5);
+}
+
+async function toggle(){conn?await disc():await con();}
+async function con(){
+  try{
+    $('err').style.display='none';
+    if(!('serial' in navigator)){shErr('Web Serial nicht verfügbar — Chrome oder Edge');return;}
+    port=await navigator.serial.requestPort();await port.open({baudRate:115200});
+    act=true;conn=true;uBtn();$('sBtn').disabled=false;
+    sessionStart=new Date().toISOString();sessionLog=[];
+    aLog('Verbunden');uUI();rLoop();
+  }catch(e){if(e.name!=='NotFoundError')shErr(e.message);}
+}
+async function disc(){
+  act=false;try{if(rdr)await rdr.cancel();}catch{}
+  try{if(port)await port.close();}catch{}
+  port=null;conn=false;uBtn();$('sBtn').disabled=true;
+  aLog('Getrennt');
+  saveCurrentSession();
+  uUI();
+}
+function uBtn(){const b=$('cBtn');b.textContent=conn?'Disconnect':'Connect';b.className=conn?'conn-btn on':'conn-btn';}
+async function rLoop(){
+  const dc=new TextDecoderStream(),cl=port.readable.pipeTo(dc.writable);
+  rdr=dc.readable.getReader();let buf='';
+  try{
+    while(act){
+      const{value,done}=await rdr.read();if(done)break;
+      buf+=value;const ls=buf.split('\n');buf=ls.pop()||'';
+      for(const l of ls){
+        const s=l.trim();if(!s)continue;
+        const p=parse(s);
+        aLog(s,p?p.t:null);
+        if(p){
+          ct=p.t;fo=p.f;
+          if(p.h!==null)hum=p.h;
+          if(p.dt!==null)dhtT=p.dt;
+          const now=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+          td.push({v:p.t,ti:now,h:hum});if(td.length>MX)td.shift();
+          uUI();draw();
+        }
+      }
+    }
+  }catch(e){if(act)shErr(e.message);}
+  finally{rdr.releaseLock();await cl.catch(()=>{});}
+}
+async function sendSP(){
+  if(!port||!port.writable)return;
+  const c=$('ciCold').value,h=$('ciHot').value,hy=$('ciHyst').value;
+  const wr=port.writable.getWriter();
+  const enc=new TextEncoder();
+  await wr.write(enc.encode('SET:'+c+':'+h+'\n'));
+  await wr.write(enc.encode('HYST:'+hy+'\n'));
+  wr.releaseLock();
+  aLog('\u2192 SET:'+c+':'+h+' HYST:'+hy);
+}
+function shErr(m){$('err').textContent=m;$('err').style.display='block';}
+
+// Auto-save on page close
+window.addEventListener('beforeunload',()=>{if(sessionLog.length)saveCurrentSession();});
+
+// Track fill: color the left part of slider track
+function updateTrackFill(el){
+  const min=+el.min,max=+el.max,val=+el.value;
+  const pct=((val-min)/(max-min))*100;
+  let col='var(--accent)';
+  if(el.classList.contains('cold'))col='var(--cold)';
+  if(el.classList.contains('hot'))col='var(--hot)';
+  if(el.classList.contains('hyst'))col='var(--warn)';
+  el.style.background=`linear-gradient(to right, ${col} 0%, ${col} ${pct}%, var(--border) ${pct}%, var(--border) 100%)`;
+  el.style.borderRadius='3px';
+  el.style.height='6px';
+}
+function updateAllTracks(){
+  document.querySelectorAll('.ctrl-range').forEach(updateTrackFill);
+}
+// Hook into all range inputs
+document.querySelectorAll('.ctrl-range').forEach(el=>{
+  el.addEventListener('input',()=>updateTrackFill(el));
+  updateTrackFill(el);
+});
+// Also update when syncing from number inputs
+const origSyncSlid=syncSlid,origSyncInput=syncInput,origSyncHyst=syncHyst,origSyncHystSlid=syncHystSlid,origSetPre=setPre;
+syncSlid=function(){origSyncSlid();updateAllTracks();};
+syncInput=function(){origSyncInput();updateAllTracks();};
+syncHyst=function(){origSyncHyst();updateAllTracks();};
+syncHystSlid=function(){origSyncHystSlid();updateAllTracks();};
+setPre=function(c,h){origSetPre(c,h);updateAllTracks();};
+
+uUI();draw();renderMiniLog();updateAllTracks();
+addEventListener('resize',draw);
+</script>
+</body>
+</html>

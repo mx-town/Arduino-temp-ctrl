@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1050" width="1400" height="1050" style="background:#fff">
+  <style>
+    text { font-family: 'Courier New', monospace; fill: #1a1a1a; }
+    .label { font-size: 11px; }
+    .pin { font-size: 9px; fill: #444; }
+    .title { font-size: 14px; font-weight: bold; }
+    .subtitle { font-size: 10px; fill: #555; }
+    .note { font-size: 9px; fill: #666; }
+    .wire { stroke: #1a1a1a; stroke-width: 1.5; fill: none; }
+    .wire-thick { stroke: #1a1a1a; stroke-width: 2; fill: none; }
+    .wire-dash { stroke: #1a1a1a; stroke-width: 1; fill: none; stroke-dasharray: 6,3; }
+    .comp { stroke: #1a1a1a; stroke-width: 1.5; fill: none; }
+    .comp-fill { stroke: #1a1a1a; stroke-width: 1.5; fill: #fff; }
+    .border { stroke: #1a1a1a; stroke-width: 2; fill: none; }
+    .border-thin { stroke: #1a1a1a; stroke-width: 1; fill: none; }
+    .junction { fill: #1a1a1a; }
+  </style>
+
+  <!-- ============================================ -->
+  <!-- BORDER + HEADER                              -->
+  <!-- ============================================ -->
+  <rect x="20" y="20" width="1360" height="1010" class="border"/>
+  <line x1="20" y1="55" x2="1380" y2="55" class="border-thin"/>
+  <text x="120" y="45" class="label" text-anchor="middle">1</text>
+  <text x="300" y="45" class="label" text-anchor="middle">2</text>
+  <text x="500" y="45" class="label" text-anchor="middle">3</text>
+  <text x="700" y="45" class="label" text-anchor="middle">4</text>
+  <text x="920" y="45" class="label" text-anchor="middle">5</text>
+  <text x="1140" y="45" class="label" text-anchor="middle">6</text>
+  <text x="1300" y="45" class="label" text-anchor="middle">7</text>
+
+  <!-- ============================================ -->
+  <!-- 5V POWER RAILS (left half, Col 1-4)          -->
+  <!-- ============================================ -->
+  <line x1="40" y1="80" x2="770" y2="80" class="wire-thick"/>
+  <text x="45" y="76" class="label">+5V</text>
+  <line x1="40" y1="720" x2="770" y2="720" class="wire"/>
+  <text x="45" y="718" class="label">GND</text>
+
+  <!-- ============================================ -->
+  <!-- 24V POWER RAILS (right half, Col 5-7)        -->
+  <!-- ============================================ -->
+  <line x1="810" y1="80" x2="1360" y2="80" class="wire-thick"/>
+  <text x="815" y="76" class="label">+24V</text>
+  <line x1="810" y1="720" x2="1360" y2="720" class="wire"/>
+  <text x="815" y="718" class="label">GND-24V</text>
+
+  <!-- Galvanic separation -->
+  <line x1="790" y1="65" x2="790" y2="735" class="wire-dash"/>
+  <text x="790" y="750" class="note" text-anchor="middle">galv. Trennung</text>
+
+  <!-- ============================================ -->
+  <!-- CENTER: ARDUINO NANO (Column 3-4)            -->
+  <!-- ============================================ -->
+  <rect x="440" y="170" width="210" height="420" class="comp-fill" rx="3"/>
+  <text x="545" y="198" class="title" text-anchor="middle">ARDUINO NANO</text>
+  <text x="545" y="216" class="subtitle" text-anchor="middle">ATmega328P</text>
+
+  <!-- Left pins -->
+  <line x1="440" y1="270" x2="410" y2="270" class="wire"/>
+  <text x="448" y="274" class="pin">D4</text>
+  <circle cx="410" cy="270" r="2.5" class="junction"/>
+
+  <line x1="440" y1="320" x2="410" y2="320" class="wire"/>
+  <text x="448" y="324" class="pin">D5</text>
+  <circle cx="410" cy="320" r="2.5" class="junction"/>
+
+  <line x1="440" y1="370" x2="410" y2="370" class="wire"/>
+  <text x="448" y="374" class="pin">D6</text>
+  <circle cx="410" cy="370" r="2.5" class="junction"/>
+
+  <line x1="440" y1="420" x2="410" y2="420" class="wire"/>
+  <text x="448" y="424" class="pin">D7</text>
+  <circle cx="410" cy="420" r="2.5" class="junction"/>
+
+  <!-- Right pins -->
+  <line x1="650" y1="270" x2="680" y2="270" class="wire"/>
+  <text x="625" y="274" class="pin">D8</text>
+  <circle cx="680" cy="270" r="2.5" class="junction"/>
+
+  <line x1="650" y1="340" x2="680" y2="340" class="wire"/>
+  <text x="630" y="344" class="pin">5V</text>
+  <circle cx="680" cy="340" r="2.5" class="junction"/>
+
+  <line x1="650" y1="390" x2="680" y2="390" class="wire"/>
+  <text x="622" y="394" class="pin">GND</text>
+  <circle cx="680" cy="390" r="2.5" class="junction"/>
+
+  <!-- 5V to rail -->
+  <line x1="680" y1="340" x2="740" y2="340" class="wire"/>
+  <line x1="740" y1="340" x2="740" y2="80" class="wire"/>
+  <circle cx="740" cy="80" r="2.5" class="junction"/>
+
+  <!-- GND to rail -->
+  <line x1="680" y1="390" x2="750" y2="390" class="wire"/>
+  <line x1="750" y1="390" x2="750" y2="720" class="wire"/>
+  <circle cx="750" cy="720" r="2.5" class="junction"/>
+
+  <!-- USB -->
+  <rect x="515" y="565" width="60" height="20" class="comp-fill"/>
+  <text x="545" y="579" class="pin" text-anchor="middle">USB</text>
+  <line x1="545" y1="585" x2="545" y2="608" class="wire"/>
+  <text x="545" y="622" class="note" text-anchor="middle">zum PC (Serial 9600 Bd)</text>
+
+  <!-- ============================================ -->
+  <!-- LEFT COL 1: DS18B20 SENSOR                   -->
+  <!-- ============================================ -->
+  <rect x="60" y="195" width="150" height="150" class="comp-fill" rx="3"/>
+  <text x="135" y="220" class="label" text-anchor="middle">DS18B20</text>
+  <text x="135" y="236" class="subtitle" text-anchor="middle">Temp.Sensor</text>
+  <text x="135" y="252" class="subtitle" text-anchor="middle">(Kabel-Version)</text>
+
+  <text x="75" y="280" class="pin">3-VCC (ROT)</text>
+  <text x="75" y="296" class="pin">2-DQ  (GELB)</text>
+  <text x="75" y="312" class="pin">1-GND (SCHWARZ)</text>
+
+  <!-- VCC up to 5V rail -->
+  <line x1="135" y1="195" x2="135" y2="80" class="wire"/>
+  <circle cx="135" cy="80" r="2.5" class="junction"/>
+
+  <!-- GND down to GND rail -->
+  <line x1="100" y1="345" x2="100" y2="720" class="wire"/>
+  <circle cx="100" cy="720" r="2.5" class="junction"/>
+
+  <!-- DATA right to D4 -->
+  <line x1="210" y1="270" x2="410" y2="270" class="wire"/>
+
+  <!-- Pull-Up R1 -->
+  <line x1="280" y1="270" x2="280" y2="155" class="wire"/>
+  <circle cx="280" cy="270" r="2.5" class="junction"/>
+  <rect x="274" y="155" width="12" height="40" class="comp-fill"/>
+  <text x="260" y="180" class="pin" text-anchor="end">R1</text>
+  <text x="260" y="192" class="pin" text-anchor="end">4.7k</text>
+  <line x1="280" y1="155" x2="280" y2="80" class="wire"/>
+  <circle cx="280" cy="80" r="2.5" class="junction"/>
+
+  <!-- ============================================ -->
+  <!-- LEFT COL 1-2: LEDs                           -->
+  <!-- ============================================ -->
+
+  <!-- LED1 BLAU: D5 -->
+  <line x1="410" y1="320" x2="300" y2="320" class="wire"/>
+  <rect x="260" y="314" width="40" height="12" class="comp-fill"/>
+  <text x="280" y="310" class="pin" text-anchor="middle">R2 220R</text>
+  <line x1="260" y1="320" x2="230" y2="320" class="wire"/>
+  <polygon points="230,310 230,330 210,320" class="comp"/>
+  <line x1="210" y1="310" x2="210" y2="330" class="wire"/>
+  <line x1="218" y1="308" x2="212" y2="302" class="wire"/>
+  <line x1="215" y1="312" x2="209" y2="306" class="wire"/>
+  <polygon points="212,302 214,305 216,303" style="fill:#1a1a1a;stroke:none"/>
+  <polygon points="209,306 211,309 213,307" style="fill:#1a1a1a;stroke:none"/>
+  <text x="195" y="317" class="pin" text-anchor="end">LED1</text>
+  <text x="195" y="329" class="pin" text-anchor="end">BLAU</text>
+  <line x1="210" y1="320" x2="160" y2="320" class="wire"/>
+  <line x1="160" y1="320" x2="160" y2="720" class="wire"/>
+  <circle cx="160" cy="720" r="2.5" class="junction"/>
+
+  <!-- LED2 GRUN: D6 -->
+  <line x1="410" y1="370" x2="300" y2="370" class="wire"/>
+  <rect x="260" y="364" width="40" height="12" class="comp-fill"/>
+  <text x="280" y="360" class="pin" text-anchor="middle">R3 220R</text>
+  <line x1="260" y1="370" x2="230" y2="370" class="wire"/>
+  <polygon points="230,360 230,380 210,370" class="comp"/>
+  <line x1="210" y1="360" x2="210" y2="380" class="wire"/>
+  <line x1="218" y1="358" x2="212" y2="352" class="wire"/>
+  <line x1="215" y1="362" x2="209" y2="356" class="wire"/>
+  <polygon points="212,352 214,355 216,353" style="fill:#1a1a1a;stroke:none"/>
+  <polygon points="209,356 211,359 213,357" style="fill:#1a1a1a;stroke:none"/>
+  <text x="195" y="367" class="pin" text-anchor="end">LED2</text>
+  <text x="195" y="379" class="pin" text-anchor="end">GRUN</text>
+  <line x1="210" y1="370" x2="170" y2="370" class="wire"/>
+  <line x1="170" y1="370" x2="170" y2="720" class="wire"/>
+  <circle cx="170" cy="720" r="2.5" class="junction"/>
+
+  <!-- LED3 ROT: D7 -->
+  <line x1="410" y1="420" x2="300" y2="420" class="wire"/>
+  <rect x="260" y="414" width="40" height="12" class="comp-fill"/>
+  <text x="280" y="410" class="pin" text-anchor="middle">R4 220R</text>
+  <line x1="260" y1="420" x2="230" y2="420" class="wire"/>
+  <polygon points="230,410 230,430 210,420" class="comp"/>
+  <line x1="210" y1="410" x2="210" y2="430" class="wire"/>
+  <line x1="218" y1="408" x2="212" y2="402" class="wire"/>
+  <line x1="215" y1="412" x2="209" y2="406" class="wire"/>
+  <polygon points="212,402 214,405 216,403" style="fill:#1a1a1a;stroke:none"/>
+  <polygon points="209,406 211,409 213,407" style="fill:#1a1a1a;stroke:none"/>
+  <text x="195" y="417" class="pin" text-anchor="end">LED3</text>
+  <text x="195" y="429" class="pin" text-anchor="end">ROT</text>
+  <line x1="210" y1="420" x2="180" y2="420" class="wire"/>
+  <line x1="180" y1="420" x2="180" y2="720" class="wire"/>
+  <circle cx="180" cy="720" r="2.5" class="junction"/>
+
+  <!-- ============================================ -->
+  <!-- RIGHT COL 5: R5 + BC337                      -->
+  <!-- ============================================ -->
+
+  <!-- D8 right to R5 -->
+  <line x1="680" y1="270" x2="840" y2="270" class="wire"/>
+
+  <!-- R5 Basiswiderstand -->
+  <rect x="840" y="264" width="50" height="12" class="comp-fill"/>
+  <text x="865" y="260" class="pin" text-anchor="middle">R5</text>
+  <text x="865" y="250" class="pin" text-anchor="middle">1k</text>
+
+  <!-- R5 to BC337 Basis -->
+  <line x1="890" y1="270" x2="920" y2="270" class="wire"/>
+
+  <!-- BC337 Box -->
+  <rect x="920" y="220" width="100" height="140" class="comp-fill" rx="3"/>
+  <text x="970" y="248" class="label" text-anchor="middle">BC337</text>
+  <text x="970" y="264" class="subtitle" text-anchor="middle">NPN</text>
+
+  <!-- NPN symbol inside -->
+  <line x1="948" y1="285" x2="948" y2="330" class="wire"/>
+  <line x1="948" y1="295" x2="975" y2="280" class="wire"/>
+  <line x1="948" y1="320" x2="975" y2="340" class="wire"/>
+  <polygon points="975,340 968,337 970,333" style="fill:#1a1a1a;stroke:none"/>
+
+  <!-- Pin labels -->
+  <text x="910" y="274" class="pin" text-anchor="end">B</text>
+  <text x="978" y="218" class="pin">C</text>
+  <text x="978" y="370" class="pin">E</text>
+
+  <!-- Pinout note -->
+  <text x="925" y="380" class="note">Pinout (flache</text>
+  <text x="925" y="392" class="note">Seite zu dir):</text>
+  <text x="925" y="404" class="note">E - B - C</text>
+
+  <!-- Collector up to relay -->
+  <line x1="970" y1="220" x2="970" y2="195" class="wire"/>
+
+  <!-- Emitter down to GND-24V -->
+  <line x1="970" y1="360" x2="970" y2="720" class="wire"/>
+  <circle cx="970" cy="720" r="2.5" class="junction"/>
+
+  <!-- ============================================ -->
+  <!-- RIGHT COL 5-6: DS2E-S-DC24V RELAY            -->
+  <!-- All 8 pins labeled                           -->
+  <!-- ============================================ -->
+  <rect x="880" y="90" width="200" height="105" class="comp-fill" rx="3"/>
+  <text x="980" y="112" class="title" text-anchor="middle">DS2E-S-DC24V</text>
+  <text x="980" y="128" class="subtitle" text-anchor="middle">Panasonic DPDT 2A</text>
+  <text x="980" y="143" class="subtitle" text-anchor="middle">24V Spule / 2.88k / 8.3mA</text>
+
+  <!-- Spule symbol -->
+  <path d="M940,162 Q948,155 956,162 Q964,169 972,162 Q980,155 988,162" class="comp"/>
+  <line x1="940" y1="162" x2="940" y2="170" class="wire"/>
+  <line x1="988" y1="162" x2="988" y2="170" class="wire"/>
+
+  <!-- Pin 1: Spule A1 (+) to +24V -->
+  <line x1="940" y1="90" x2="940" y2="80" class="wire"/>
+  <circle cx="940" cy="80" r="2.5" class="junction"/>
+  <text x="920" y="88" class="pin">Pin 1</text>
+  <text x="920" y="78" class="pin">A1 (+)</text>
+
+  <!-- Pin 8: Spule A2 (-) to BC337 Collector -->
+  <line x1="988" y1="170" x2="988" y2="195" class="wire"/>
+  <line x1="988" y1="195" x2="970" y2="195" class="wire"/>
+  <text x="994" y="188" class="pin">Pin 8</text>
+  <text x="994" y="178" class="pin">A2 (-)</text>
+
+  <!-- Freilaufdiode D1 parallel zur Spule -->
+  <line x1="1050" y1="90" x2="1050" y2="195" class="wire"/>
+  <!-- Diode symbol -->
+  <polygon points="1040,155 1060,155 1050,135" class="comp"/>
+  <line x1="1040" y1="135" x2="1060" y2="135" class="wire"/>
+  <!-- Connect top to Pin 1 line -->
+  <line x1="1050" y1="90" x2="940" y2="90" class="wire"/>
+  <circle cx="940" cy="90" r="2" class="junction"/>
+  <!-- Connect bottom to Pin 8 line -->
+  <line x1="1050" y1="195" x2="988" y2="195" class="wire"/>
+  <circle cx="988" cy="195" r="2" class="junction"/>
+  <text x="1065" y="140" class="pin">D1</text>
+  <text x="1065" y="152" class="pin">1N4004</text>
+  <text x="1065" y="164" class="pin">(Freilauf)</text>
+  <text x="1065" y="180" class="note">Kathode (Strich)</text>
+  <text x="1065" y="190" class="note">an +24V (oben)</text>
+
+  <!-- ============================================ -->
+  <!-- RELAY CONTACTS (Col 6-7)                     -->
+  <!-- ============================================ -->
+  <rect x="1150" y="240" width="200" height="320" class="comp-fill" rx="3"/>
+  <text x="1250" y="265" class="title" text-anchor="middle">KONTAKTE</text>
+  <text x="1250" y="282" class="subtitle" text-anchor="middle">DS2E-S-DC24V</text>
+
+  <!-- Divider -->
+  <line x1="1160" y1="295" x2="1340" y2="295" class="border-thin"/>
+
+  <!-- Contact set 1 -->
+  <text x="1170" y="315" class="label">Umschalter 1</text>
+
+  <!-- COM1 Pin 2 -->
+  <circle cx="1185" cy="340" r="3" class="comp-fill"/>
+  <text x="1195" y="344" class="pin">Pin 2  COM1</text>
+  <line x1="1150" y1="340" x2="1182" y2="340" class="wire"/>
+
+  <!-- NO switch arm -->
+  <line x1="1185" y1="340" x2="1205" y2="362" class="wire"/>
+
+  <!-- NC1 Pin 3 -->
+  <circle cx="1210" cy="340" r="3" class="comp-fill"/>
+  <text x="1220" y="344" class="pin">Pin 3  NC1  (Normal geschlossen)</text>
+
+  <!-- NO1 Pin 4 -->
+  <circle cx="1210" cy="370" r="3" class="comp-fill"/>
+  <text x="1220" y="374" class="pin">Pin 4  NO1  (Normal offen)</text>
+  <line x1="1150" y1="370" x2="1207" y2="370" class="wire"/>
+
+  <!-- Divider -->
+  <line x1="1160" y1="400" x2="1340" y2="400" class="border-thin"/>
+
+  <!-- Contact set 2 -->
+  <text x="1170" y="420" class="label">Umschalter 2</text>
+
+  <!-- COM2 Pin 7 -->
+  <circle cx="1185" cy="445" r="3" class="comp-fill"/>
+  <text x="1195" y="449" class="pin">Pin 7  COM2</text>
+  <line x1="1150" y1="445" x2="1182" y2="445" class="wire"/>
+
+  <!-- NO switch arm -->
+  <line x1="1185" y1="445" x2="1205" y2="467" class="wire"/>
+
+  <!-- NC2 Pin 6 -->
+  <circle cx="1210" cy="445" r="3" class="comp-fill"/>
+  <text x="1220" y="449" class="pin">Pin 6  NC2  (Normal geschlossen)</text>
+
+  <!-- NO2 Pin 5 -->
+  <circle cx="1210" cy="475" r="3" class="comp-fill"/>
+  <text x="1220" y="479" class="pin">Pin 5  NO2  (Normal offen)</text>
+  <line x1="1150" y1="475" x2="1207" y2="475" class="wire"/>
+
+  <!-- Usage note -->
+  <text x="1170" y="515" class="note">Verwendung:</text>
+  <text x="1170" y="528" class="note">COM1 (Pin 2) an 24V+</text>
+  <text x="1170" y="541" class="note">NO1  (Pin 4) an Luefter+</text>
+  <text x="1170" y="554" class="note">Luefter- an GND-24V</text>
+
+  <!-- ============================================ -->
+  <!-- 24V NETZTEIL (Col 5 bottom)                  -->
+  <!-- ============================================ -->
+  <rect x="830" y="490" width="150" height="100" class="comp-fill" rx="3"/>
+  <text x="905" y="515" class="label" text-anchor="middle">NETZTEIL</text>
+  <text x="905" y="532" class="subtitle" text-anchor="middle">AC/DC 24V</text>
+  <text x="905" y="548" class="subtitle" text-anchor="middle">230V~ Eingang</text>
+
+  <!-- V+ up to 24V rail -->
+  <line x1="880" y1="490" x2="880" y2="80" class="wire"/>
+  <circle cx="880" cy="80" r="2.5" class="junction"/>
+  <text x="886" y="488" class="pin">V+</text>
+
+  <!-- V- down to GND-24V rail -->
+  <line x1="920" y1="590" x2="920" y2="720" class="wire"/>
+  <circle cx="920" cy="720" r="2.5" class="junction"/>
+  <text x="926" y="586" class="pin">V-</text>
+
+  <!-- ============================================ -->
+  <!-- RELAY PIN OVERVIEW (bottom of relay)         -->
+  <!-- ============================================ -->
+  <rect x="880" y="420" width="200" height="55" class="border-thin"/>
+  <text x="890" y="438" class="label">RELAIS PINOUT (von unten)</text>
+  <text x="890" y="455" class="note">1(A1+)  2(COM1)  3(NC1)  4(NO1)</text>
+  <text x="890" y="468" class="note">8(A2-)  7(COM2)  6(NC2)  5(NO2)</text>
+
+  <!-- ============================================ -->
+  <!-- PIN MAPPING TABLE                            -->
+  <!-- ============================================ -->
+  <rect x="40" y="640" width="350" height="70" class="border-thin"/>
+  <text x="55" y="658" class="label">PIN-ZUORDNUNG ARDUINO</text>
+  <text x="55" y="675" class="note">D4 = DS18B20 DATA  |  D5 = LED Blau  |  D6 = LED Gruen</text>
+  <text x="55" y="690" class="note">D7 = LED Rot  |  D8 = BC337 Basis (via R5 1k)</text>
+  <text x="55" y="705" class="note">5V = Sensor VCC, Pull-Up  |  GND = gemeinsame Masse</text>
+
+  <!-- ============================================ -->
+  <!-- STUCKLISTE                                   -->
+  <!-- ============================================ -->
+  <rect x="40" y="770" width="1320" height="120" class="border-thin"/>
+  <text x="55" y="790" class="label">STUCKLISTE</text>
+  <line x1="40" y1="798" x2="1360" y2="798" class="border-thin"/>
+
+  <text x="55" y="815" class="note">R1 = 4.7 kOhm  Pull-Up DS18B20 (DATA nach 5V)</text>
+  <text x="55" y="830" class="note">R2, R3, R4 = 220 Ohm  LED Vorwiderstaende</text>
+  <text x="55" y="845" class="note">R5 = 1 kOhm  Basiswiderstand BC337</text>
+  <text x="55" y="860" class="note">D1 = 1N4004 (oder 1N4007)  Freilaufdiode</text>
+
+  <text x="500" y="815" class="note">BC337 NPN  Schalttransistor (E-B-C, flache Seite zu dir)</text>
+  <text x="500" y="830" class="note">DS2E-S-DC24V  Panasonic Relais, 24V Spule, DPDT 2A, 8-Pin DIP</text>
+  <text x="500" y="845" class="note">DS18B20  Digitaler Temperatursensor, OneWire, Kabel-Version</text>
+  <text x="500" y="860" class="note">LED1=Blau (&lt;20C) | LED2=Gruen (20-25C) | LED3=Rot (&gt;25C)</text>
+
+  <line x1="40" y1="870" x2="1360" y2="870" class="border-thin"/>
+  <text x="55" y="885" class="note">HINWEISE:</text>
+  <text x="130" y="885" class="note">Freilaufdiode D1 ist PFLICHT! Kathode (Strich) an Pin 1 / +24V, Anode an Pin 8 / Collector BC337</text>
+
+  <!-- ============================================ -->
+  <!-- TITLE BLOCK                                  -->
+  <!-- ============================================ -->
+  <rect x="900" y="910" width="460" height="110" class="border"/>
+  <line x1="900" y1="940" x2="1360" y2="940" class="border-thin"/>
+  <line x1="900" y1="970" x2="1360" y2="970" class="border-thin"/>
+  <line x1="1080" y1="910" x2="1080" y2="1020" class="border-thin"/>
+
+  <text x="915" y="932" class="label">Bezeichnung:</text>
+  <text x="1095" y="932" class="title">Stromlaufplan</text>
+  <text x="1095" y="960" class="label">Temp-Controller Arduino Nano</text>
+  <text x="1095" y="990" class="label">BC337 + DS2E-S-DC24V (8-Pin)</text>
+  <text x="1095" y="1012" class="label">DS18B20 / 3x LED / Relais 24V</text>
+  <text x="915" y="960" class="note">Erstellt: 2026</text>
+  <text x="915" y="980" class="note">Blatt 1 / 1</text>
+  <text x="915" y="1000" class="note">Version: 3</text>
+
+</svg>
